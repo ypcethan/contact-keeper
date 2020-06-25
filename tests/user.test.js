@@ -24,20 +24,48 @@ const userOne = {
 
 const baseUrl = '/api/v1/users'
 describe('User', () => {
-    test('Can register a new user', async () => {
-        const response = await request(app)
-            .post(baseUrl + "/register")
-            .send(userOne)
-            .expect(200)
+    describe('Register user', () => {
+        const registerUrl = baseUrl + "/register"
+        test('Can register a new user', async () => {
+            const response = await request(app)
+                .post(registerUrl)
+                .send(userOne)
+                .expect(200)
 
-        const user = await User.findById(response.body.user._id)
-        expect(user).not.toBeNull()
+            const user = await User.findById(response.body.user._id)
+            expect(user).not.toBeNull()
+        });
+        test('Cannot register when user with same email exists', async () => {
+            await User.create(userOne)
+            const response = await request(app)
+                .post(registerUrl)
+                .send(userOne)
+                .expect(400)
+        }),
+            test('Password too short', async () => {
+                const response = await request(app)
+                    .post(registerUrl)
+                    .send({ ...userOne, password: "123" })
+                    .expect(400)
+                expect(response.body.success).toBe(false)
+            })
+
+        test('Password is required', async () => {
+            const response = await request(app)
+                .post(registerUrl)
+                .send({ ...userOne, password: "" })
+
+            expect(response.body).toMatchObject({ success: false, error: ' Password is required' })
+        })
+            ,
+            test('Name is required', async () => {
+                const response = await request(app)
+                    .post(registerUrl)
+                    .send({
+                        password: "12341234",
+                        'email': 'qwer@gmail.com'
+                    })
+                expect(response.body).toMatchObject({ success: false, error: 'Please add a name' })
+            })
     });
-    test('Error with duplicate email', async () => {
-        await User.create(userOne)
-        const response = await request(app)
-            .post(baseUrl + "/register")
-            .send(userOne)
-            .expect(400)
-    })
 });
