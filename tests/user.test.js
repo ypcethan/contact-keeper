@@ -1,7 +1,7 @@
-const { app } = require('../server')
 const request = require('supertest')
-
+const { app } = require('../server')
 const dbHandler = require("./test-db-setup");
+const User = require('../models/User')
 
 // connect to a new in-memory database before running any tests.
 beforeAll(async () => await dbHandler.connect());
@@ -30,6 +30,14 @@ describe('User', () => {
             .send(userOne)
             .expect(200)
 
-        console.log(response.body)
+        const user = await User.findById(response.body.user._id)
+        expect(user).not.toBeNull()
     });
+    test('Error with duplicate email', async () => {
+        await User.create(userOne)
+        const response = await request(app)
+            .post(baseUrl + "/register")
+            .send(userOne)
+            .expect(400)
+    })
 });
