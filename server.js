@@ -1,13 +1,14 @@
 const express = require('express')
+const mongoSanitize = require('express-mongo-sanitize')
 const dotenv = require('dotenv')
 const colors = require('colors')
 const cookieParser = require('cookie-parser')
+const morgan = require('morgan')
+const helmet = require('helmet')
 const userRouter = require('./routes/user')
 const contactRouter = require('./routes/contact')
 const errorHandler = require('./middlewares/errorHandler')
 const connectDB = require('./db/db')
-const { request } = require('express')
-const morgan = require('morgan')
 
 
 const app = express()
@@ -19,7 +20,9 @@ if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV==='test') {
 // Mounting middleware
 app.use(express.json())
 app.use(cookieParser())
-
+app.use(mongoSanitize())
+// Set secure header
+app.use(helmet())
 // Mounting routers
 app.use('/api/v1/users', userRouter)
 app.use('/api/v1/contacts' , contactRouter)
