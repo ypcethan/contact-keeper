@@ -11,7 +11,7 @@ exports.protect = asyncHandler(async (req,res,next) => {
         token = req.cookies.token
     }
     if (!token){
-        next(new ErrorResponse('Not authorize to access this route : empty token' , 401))
+        return next(new ErrorResponse('Not authorize to access this route : empty token' , 401))
     }
 
     try {

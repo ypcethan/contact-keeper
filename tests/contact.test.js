@@ -57,14 +57,43 @@ describe('Create Contact', () => {
 
 describe('Update and delete contact', () => {
 
-    test('Autenticated user cannot update contact that is her own',async () => {
-        
+    test('Autenticated user cannot update contact that is not her own',async () => {
+         
         const response = await request(app)
             .patch(baseUrl + `/${contactThree._id}`)
             .set({'authorization':`Bearer ${tokenTwo}`})
             .send(contactOneData)
             .expect(403)
-        console.log(response.body)
+        
+    })
 
+    test('Autenticated user can update contact that is her own' , async () => {
+        const response = await request(app)
+            .patch(baseUrl + `/${contactThree._id}`)
+            .set({'authorization':`Bearer ${tokenOne}`})
+            .send(contactOneData)
+            .expect(200)
+
+        const contact = response.body.contact
+        expect(contact.name).toBe(contactOneData.name)
+    })
+
+
+    test('Autenticated user cannot delete contact that is not her own',async () => {
+         
+        const response = await request(app)
+            .delete(baseUrl + `/${contactThree._id}`)
+            .set({'authorization':`Bearer ${tokenTwo}`})
+            .expect(403)
+        
+    })
+
+    test('Autenticated user can update contact that is her own' , async () => {
+        const response = await request(app)
+            .delete(baseUrl + `/${contactThree._id}`)
+            .set({'authorization':`Bearer ${tokenOne}`})
+            .expect(200)
+        const contact = await Contact.findById(contactThree._id) 
+        expect(contact).toBeNull()
     })
 })

@@ -1,6 +1,6 @@
 const express = require('express')
 const {protect} = require('../middlewares/auth')
-const {getContacts , addContact , updateContact}  = require('../controllers/contact')
+const {getContacts , addContact , updateContact , deleteContact}  = require('../controllers/contact')
 const router = express.Router()
 
 
@@ -14,4 +14,5 @@ router
 router
     .route('/:id')
     .patch(protect , updateContact)
+    .delete(protect , deleteContact)
 module.exports = router

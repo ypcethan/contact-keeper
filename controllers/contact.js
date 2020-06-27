@@ -2,6 +2,7 @@ const ErrorResponse = require('../utils/errorResponse')
 const asyncHandler = require('../middlewares/asyncHandler')
 const Contact = require('../models/Contact')
 const User = require('../models/User')
+const { contactThreeData } = require('../tests/fixture/db')
 
 
 exports.getContacts = asyncHandler( async (req,res,next) => {
@@ -25,12 +26,29 @@ exports.updateContact = asyncHandler(async (req,res,next) => {
     if (!contact){
         next(new ErrorResponse(`Course with id : ${req.params.id} does not exist` , 404))
     }
-    if (contact.user.id.toString() !== req.user.id){
-        next(new ErrorResponse(`User ${req.user.id} is not authorize to update this contact` , 403))
+    if (contact.user.toString() !== req.user.id){
+        
+        return next(new ErrorResponse(`User ${req.user.id} is not authorize to update this contact` , 403))
     }
     contact = await Contact.findByIdAndUpdate(req.params.id , req.body, {
         new: true,
         runValidators: true
     })
     res.status(200).json({success: true , contact})
+})
+
+
+exports.deleteContact = asyncHandler(async (req,res,next)=>{
+    let contact = await Contact.findById(req.params.id) 
+
+    if (!contact){
+        next(new ErrorResponse(`Course with id : ${req.params.id} does not exist` , 404))
+    }
+    if (contact.user.toString() !== req.user.id){
+        
+        return next(new ErrorResponse(`User ${req.user.id} is not authorize to update this contact` , 403))
+    } 
+
+    await contact.remove()
+    res.status(200).json({success: true , contact: {}})
 })
