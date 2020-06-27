@@ -5,6 +5,9 @@ const colors = require('colors')
 const cookieParser = require('cookie-parser')
 const morgan = require('morgan')
 const helmet = require('helmet')
+const xss = require('xss-clean')
+const rateLimit = require('express-rate-limit')
+const hpp = require('hpp')
 const userRouter = require('./routes/user')
 const contactRouter = require('./routes/contact')
 const errorHandler = require('./middlewares/errorHandler')
@@ -23,6 +26,16 @@ app.use(cookieParser())
 app.use(mongoSanitize())
 // Set secure header
 app.use(helmet())
+// Present XSS attack
+app.use(xss())
+
+const limiter = rateLimit({
+    windowMs:10 * 60 * 1000, // 10 mins
+    max:100
+})
+app.use(limiter)
+
+app.use(hpp())
 // Mounting routers
 app.use('/api/v1/users', userRouter)
 app.use('/api/v1/contacts' , contactRouter)
