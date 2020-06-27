@@ -19,7 +19,7 @@ afterAll(async () => await dbHandler.closeDatabase())
 const userOne = {
     name: 'Ethan',
     email: 'ethan@gmail.com',
-    password: '123123'
+    password: '123123',
 }
 
 const baseUrl = '/api/v1/users'
@@ -41,39 +41,41 @@ describe('User', () => {
                 .post(registerUrl)
                 .send(userOne)
                 .expect(400)
-        })
-        test('Password too short', async () => {
-            const response = await request(app)
-                .post(registerUrl)
-                .send({ ...userOne, password: '123' })
-                .expect(400)
-            expect(response.body.success).toBe(false)
-        })
-
-        test('Password is required', async () => {
-            const response = await request(app)
-                .post(registerUrl)
-                .send({ ...userOne, password: '' })
-
-            expect(response.body).toMatchObject({ success: false, error: ' Password is required' })
-        })
-        ,
+        }),
+   
         test('Name is required', async () => {
-            const response = await request(app)
-                .post(registerUrl)
-                .send({
-                    password: '12341234',
-                    'email': 'qwer@gmail.com'
-                })
-            expect(response.body).toMatchObject({ success: false, error: 'Please add a name' })
+            const response = await request(app).post(registerUrl).send({
+                password: '12341234',
+                email: 'qwer@gmail.com',
+            })
+            expect(response.body).toMatchObject({
+                success: false,
+                error: 'Please add a name',
+            })
         })
-        test('Password should be hashed', async() => {
+        test('Password should be hashed', async () => {
             const response = await request(app)
                 .post(registerUrl)
                 .send(userOne)
                 .expect(200)
             const user = await User.findById(response.body.user._id)
-            // expect(userOne.password).not.toBe(user.password)
+            expect(userOne.password).not.toBe(user.password)
+        })
+    })
+
+    describe('Sign in user', () => {
+        beforeEach(async () => {
+            await User.create(userOne)
+        })
+        const logInUrl = baseUrl + '/login'
+        test('Can login with existing account', async () => {
+            const response = await request(app)
+                .post(logInUrl)
+                .send(userOne)
+                .expect(200)
+            const token = response.body.token
+            expect(token).not.toBeNull()
         })
     })
 })
+
